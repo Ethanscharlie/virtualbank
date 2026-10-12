@@ -140,6 +140,9 @@ class Bank {
         if (vString.endsWith("%")) {
             val p = vString.dropLast(1).toFloat() / 100.0f
             v = accounts.getOrDefault(fromAccount, 0.0f) * p
+        } else if (vString.endsWith("x")) {
+            val base = vString.dropLast(1).toFloat()
+            v = accounts.getOrDefault(fromAccount, 0.0f) - base
         } else {
             v = vString.toFloat()
         }
@@ -163,7 +166,7 @@ class Bank {
         addRule("biweekly", "Checking 100% Biweekly_Food2")
         addRule("weekly", "Biweekly_Food1 100% Food")
         addRule("weekly", "if Biweekly_Food1 = 0 then Biweekly_Food2 100% Food")
-        addRule("weekly", "if food > 25 then Food 10 Saving")
+        addRule("weekly", "if Food > 25 then Food 25x Saving")
 
         lastSync = getLastSunday().minusWeeks(2)
         sync()
