@@ -9,47 +9,52 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
+import io.github.ethanscharlie.virtualbank.Bank
 import io.github.ethanscharlie.virtualbank.data.DefaultDataRepository
 import io.github.ethanscharlie.virtualbank.theme.VirtualBankTheme
 
 @Composable
 fun MainScreen(
-  onItemClick: (NavKey) -> Unit,
-  modifier: Modifier = Modifier,
-  viewModel: MainScreenViewModel = viewModel { MainScreenViewModel(DefaultDataRepository()) },
+    onItemClick: (NavKey) -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: MainScreenViewModel = viewModel { MainScreenViewModel(DefaultDataRepository()) },
 ) {
-  val state by viewModel.uiState.collectAsStateWithLifecycle()
-  when (state) {
-    MainScreenUiState.Loading -> {
-      // Blank
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    when (state) {
+        MainScreenUiState.Loading -> {
+            // Blank
+        }
+
+        is MainScreenUiState.Success -> {
+            MainScreen(data = (state as MainScreenUiState.Success).data, modifier = modifier)
+        }
+
+        is MainScreenUiState.Error -> {
+            Text("Error loading data: ${(state as MainScreenUiState.Error).throwable.message}")
+        }
     }
-    is MainScreenUiState.Success -> {
-      MainScreen(data = (state as MainScreenUiState.Success).data, modifier = modifier)
-    }
-    is MainScreenUiState.Error -> {
-      Text("Error loading data: ${(state as MainScreenUiState.Error).throwable.message}")
-    }
-  }
 }
 
 @Composable
 internal fun MainScreen(data: List<String>, modifier: Modifier = Modifier) {
-  Column(modifier) { data.forEach { Greeting(it) } }
+    Column(modifier) { data.forEach { Greeting(it) } }
 }
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
-  Text(text = "Hello $name!", modifier = modifier)
+    Text(text = "Hello $name!", modifier = modifier)
+
+    Text(text = Bank().test())
 }
 
 @Preview(showBackground = true)
 @Composable
 fun MainScreenPreview() {
-  VirtualBankTheme { MainScreen(listOf("Android")) }
+    VirtualBankTheme { MainScreen(listOf("Android")) }
 }
 
 @Preview(showBackground = true, widthDp = 340)
 @Composable
 fun MainScreenPortraitPreview() {
-  VirtualBankTheme { MainScreen(listOf("Android")) }
+    VirtualBankTheme { MainScreen(listOf("Android")) }
 }
