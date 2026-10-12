@@ -4,98 +4,27 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.time.LocalDate
 
-interface Rule {
-    fun value(fromAccount: Account, toAccount: Account): Float
-    fun toJson(): JSONObject
-}
-
-class Account {
-    var balance = 0.0f
-
-    fun toJson(): JSONObject {
-        val j = JSONObject()
-        j.put("balance", balance)
-        return j
-    }
-}
-
-class StaticRule(var v: Float) {
-    fun value(fromAccount: Account, toAccount: Account): Float {
-        return v
-    }
-
-    fun toJson(): JSONObject {
-        val j = JSONObject()
-        j.put("v", v)
-        return j
-    }
-}
-
-class PercentageRule(var percentage: Float) {
-    fun value(fromAccount: Account, toAccount: Account): Float {
-        return fromAccount.balance * (percentage / 100.0f)
-    }
-
-    fun toJson(): JSONObject {
-        val j = JSONObject()
-        j.put("percentage", percentage)
-        return j
-    }
-}
-
-class StaticRuleNonNegative(var v: Float) {
-    fun value(fromAccount: Account, toAccount: Account): Float {
-        return if (fromAccount.balance > v) v else fromAccount.balance
-    }
-
-    fun toJson(): JSONObject {
-        val j = JSONObject()
-        j.put("v", v)
-        return j
-    }
-}
-
-class PercentageOfExtraRule(var base: Float, var percentage: Float) {
-    fun value(fromAccount: Account, toAccount: Account): Float {
-        if (fromAccount.balance > base) {
-            val extra = fromAccount.balance - base
-            return extra * (percentage / 100.0f)
-        } else {
-            return 0.0f
-        }
-    }
-
-    fun toJson(): JSONObject {
-        val j = JSONObject()
-        j.put("base", base)
-        j.put("percentage", percentage)
-        return j
-    }
-}
-
 class Bank {
-    val accounts = HashMap<String, Account>()
-    val weeklyRules = ArrayList<Rule>()
-    val biweeklyRules = ArrayList<Rule>()
-    val monthlyRules = ArrayList<Rule>()
+    val accounts = HashMap<String, Float>()
+    val weeklyRules = ArrayList<String>()
+    val biweeklyRules = ArrayList<String>()
+    val monthlyRules = ArrayList<String>()
 
     fun createAccount(name: String) {
-        accounts[name] = Account()
+        accounts[name] = 0.0f
     }
 
     fun balance(account: String): Float {
-        return 0.0f
+        return accounts.getOrDefault(account, 0.0f)
     }
 
     fun deposit(account: String, v: Float) {
-        if (!accounts.containsKey(account)) return
-        accounts.get(account)?.balance += v
+        accounts.merge(account, v, Float::plus)
         save()
     }
 
     fun withdrawl(account: String, v: Float) {
-        if (!accounts.containsKey(account)) return
-        accounts.get(account)?.balance -= v
+        accounts.merge(account, v, Float::minus)
         save()
     }
 
@@ -103,10 +32,18 @@ class Bank {
         if (!accounts.containsKey(fromAccount)) return
         if (!accounts.containsKey(toAccount)) return
 
-        accounts.get(fromAccount)?.balance -= v
-        accounts.get(toAccount)?.balance += v
+        accounts.merge(fromAccount, v, Float::minus)
+        accounts.merge(toAccount, v, Float::plus)
 
         save()
+    }
+
+    fun addRule(period: String, rule: String) {
+        when (period) {
+            "weekly" -> weeklyRules.add(rule)
+            "biweekly" -> biweeklyRules.add(rule)
+            "monthly" -> monthlyRules.add(rule)
+        }
     }
 
     fun applyRemainingRules(account: String) {
@@ -117,22 +54,68 @@ class Bank {
         val j = JSONObject()
 
         val jWeeklyRules = JSONArray()
-        weeklyRules.forEach { rule -> jWeeklyRules.put(rule.toJson()) }
+        weeklyRules.forEach { rule -> jWeeklyRules.put(rule) }
         j.put("weeklyRules", jWeeklyRules)
 
         val jBiweeklyRules = JSONArray()
-        biweeklyRules.forEach { rule -> jBiweeklyRules.put(rule.toJson()) }
+        biweeklyRules.forEach { rule -> jBiweeklyRules.put(rule) }
         j.put("biweeklyRules", jBiweeklyRules)
 
         val jmonthlyRules = JSONArray()
-        monthlyRules.forEach { rule -> jmonthlyRules.put(rule.toJson()) }
+        monthlyRules.forEach { rule -> jmonthlyRules.put(rule) }
         j.put("monthlyRules", jmonthlyRules)
 
         val jAccounts = JSONObject()
-        accounts.forEach { (name, account) -> jAccounts.put(name, account.toJson()) }
+        accounts.forEach { (name, account) -> jAccounts.put(name, account) }
         j.put("accounts", jAccounts)
 
         return j
+    }
+
+    private fun runRule(rule: String) {
+        val words: List<String> = rule.split(" ")
+        if (words.size < 3) return
+
+        var shift = 0
+
+        if (words.get(0) == "if") {
+            if (words.size < 8) return
+            val conditionAccount1 = words.getOrNull(1) ?: return
+            val condition = words.getOrNull(2) ?: return
+            val conditionValue = words.getOrNull(3)?.toFloat() ?: return
+
+            val conditionAccount1Value = accounts.getOrDefault(conditionAccount1, 0.0f)
+
+            if (!when (condition) {
+                    "<" -> conditionAccount1Value < conditionValue
+                    ">" -> conditionAccount1Value > conditionValue
+                    "=" -> conditionAccount1Value == conditionValue
+                    "!=" -> conditionAccount1Value != conditionValue
+                    else -> false
+                }
+            ) {
+                return
+            }
+
+            shift = 5
+        }
+
+        val fromAccount = words.getOrNull(shift) ?: return
+        val toAccount = words.getOrNull(shift + 2) ?: return
+
+        val vString = words.getOrNull(shift + 1)
+        vString ?: return
+
+        var v = 0.0f
+        if (vString.endsWith("%")) {
+            val p = vString.dropLast(1).toFloat() / 100.0f
+            v = accounts.getOrDefault(fromAccount, 0.0f) * p
+        } else {
+            v = vString.toFloat()
+        }
+
+        accounts.merge(fromAccount, v, Float::minus)
+        accounts.merge(toAccount, v, Float::plus)
     }
 
     private fun save() {
@@ -140,6 +123,10 @@ class Bank {
     }
 
     fun test(): String {
+        deposit("a", 100.0f)
+        deposit("b", 10.0f)
+        runRule("if b > 2 then a 10% b")
+
         val j = toJson()
         return j.toString()
     }

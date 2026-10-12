@@ -44,7 +44,8 @@ internal fun MainScreen(data: List<String>, modifier: Modifier = Modifier) {
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(text = "Hello $name!", modifier = modifier)
 
-    Text(text = Bank().test())
+    val bank = Bank()
+    Text(text = bank.test())
 }
 
 @Preview(showBackground = true)
