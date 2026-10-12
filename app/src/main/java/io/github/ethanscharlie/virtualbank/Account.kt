@@ -157,11 +157,13 @@ class Bank {
         deposit("Biweekly_Food1", 0.0f)
         deposit("Biweekly_Food2", 0.0f)
         deposit("Food", 0.0f)
+        deposit("Saving", 0.0f)
 
         addRule("biweekly", "Checking 50% Biweekly_Food1")
         addRule("biweekly", "Checking 100% Biweekly_Food2")
         addRule("weekly", "Biweekly_Food1 100% Food")
         addRule("weekly", "if Biweekly_Food1 = 0 then Biweekly_Food2 100% Food")
+        addRule("weekly", "if food > 25 then Food 10 Saving")
 
         lastSync = getLastSunday().minusWeeks(2)
         sync()
