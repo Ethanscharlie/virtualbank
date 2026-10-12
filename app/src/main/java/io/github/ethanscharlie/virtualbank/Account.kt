@@ -2,13 +2,19 @@ package io.github.ethanscharlie.virtualbank
 
 import org.json.JSONArray
 import org.json.JSONObject
+import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalAdjuster
+import java.time.temporal.TemporalAdjusters
 
 class Bank {
     val accounts = HashMap<String, Float>()
     val weeklyRules = ArrayList<String>()
     val biweeklyRules = ArrayList<String>()
     val monthlyRules = ArrayList<String>()
+    var lastSync = getLastSunday()
+
 
     fun createAccount(name: String) {
         accounts[name] = 0.0f
@@ -46,8 +52,32 @@ class Bank {
         }
     }
 
-    fun applyRemainingRules(account: String) {
+    fun sync() {
+        var monthsSinceLastSync = ChronoUnit.MONTHS.between(lastSync, LocalDate.now())
+        while (monthsSinceLastSync > 0) {
+            monthlyRules.forEach { rule -> runRule(rule) }
+            monthsSinceLastSync--
+        }
+
+        var biweeksSinceLastSync = ChronoUnit.WEEKS.between(lastSync, LocalDate.now()) / 2
+        while (biweeksSinceLastSync > 0) {
+            biweeklyRules.forEach { rule -> runRule(rule) }
+            biweeksSinceLastSync--
+        }
+
+        var weeksSinceLastSync = ChronoUnit.WEEKS.between(lastSync, LocalDate.now())
+        while (weeksSinceLastSync > 0) {
+            weeklyRules.forEach { rule -> runRule(rule) }
+            weeksSinceLastSync--
+        }
+
+
+        lastSync = getLastSunday()
         save()
+    }
+
+    private fun getLastSunday(): LocalDate {
+        return LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
     }
 
     private fun toJson(): JSONObject {
@@ -123,9 +153,18 @@ class Bank {
     }
 
     fun test(): String {
-        deposit("a", 100.0f)
-        deposit("b", 10.0f)
-        runRule("if b > 2 then a 10% b")
+        deposit("Checking", 253.0f)
+        deposit("Biweekly_Food1", 0.0f)
+        deposit("Biweekly_Food2", 0.0f)
+        deposit("Food", 0.0f)
+
+        addRule("biweekly", "Checking 50% Biweekly_Food1")
+        addRule("biweekly", "Checking 100% Biweekly_Food2")
+        addRule("weekly", "Biweekly_Food1 100% Food")
+        addRule("weekly", "if Biweekly_Food1 = 0 then Biweekly_Food2 100% Food")
+
+        lastSync = getLastSunday().minusWeeks(2)
+        sync()
 
         val j = toJson()
         return j.toString()
