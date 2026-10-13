@@ -1,18 +1,38 @@
 package io.github.ethanscharlie.virtualbank
 
+import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjuster
 import java.time.temporal.TemporalAdjusters
 
-class Bank {
+class Bank(val context: Context) {
     val accounts = HashMap<String, Float>()
     var rules = ""
     var lastSync = getLastSunday()
 
+    init {
+        val file = File(context.filesDir, "rules.json")
+        if (file.exists()) {
+            val j = JSONObject(file.readText())
+            rules = j.getString("rules")
+            lastSync = LocalDate.parse(j.getString("lastSync"))
+
+            val jAccounts = j.getJSONObject("accounts")
+            val keys = jAccounts.keys()
+
+            while (keys.hasNext()) {
+                val key = keys.next()
+                val value = jAccounts.getDouble(key).toFloat()
+                accounts[key] = value
+            }
+        }
+
+    }
 
     fun createAccount(name: String) {
         accounts[name] = 0.0f
@@ -91,6 +111,8 @@ class Bank {
         accounts.forEach { (name, account) -> jAccounts.put(name, account) }
         j.put("accounts", jAccounts)
 
+        j.put("lastSync", lastSync.toString())
+
         return j
     }
 
@@ -142,26 +164,27 @@ class Bank {
     }
 
     fun save() {
-        val j = toJson()
+        val file = File(context.filesDir, "data.json")
+        file.writeText(toJson().toString(4))
     }
 
     fun test(): String {
-        deposit("Checking", 253.0f)
-        deposit("Biweekly_Food1", 0.0f)
-        deposit("Biweekly_Food2", 0.0f)
-        deposit("Food", 0.0f)
-        deposit("Saving", 0.0f)
+        //deposit("Checking", 253.0f)
+        //deposit("Biweekly_Food1", 0.0f)
+        //deposit("Biweekly_Food2", 0.0f)
+        //deposit("Food", 0.0f)
+        //deposit("Saving", 0.0f)
 
-        rules = """
-        biweekly Checking 50% Biweekly_Food1
-        biweekly Checking 100% Biweekly_Food2
-        weekly if Biweekly_Food1 = 0 then Biweekly_Food2 100% Food
-        weekly Biweekly_Food1 100% Food
-        weekly if Food > 25 then Food 25x Saving
-        """.trimIndent()
+        //rules = """
+        //biweekly Checking 50% Biweekly_Food1
+        //biweekly Checking 100% Biweekly_Food2
+        //weekly if Biweekly_Food1 = 0 then Biweekly_Food2 100% Food
+        //weekly Biweekly_Food1 100% Food
+        //weekly if Food > 25 then Food 25x Saving
+        //""".trimIndent()
 
-        lastSync = getLastSunday().minusWeeks(2)
-        sync()
+        //lastSync = getLastSunday().minusWeeks(2)
+        //sync()
 
         val j = toJson()
         return j.toString()
