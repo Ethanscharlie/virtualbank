@@ -10,9 +10,7 @@ import java.time.temporal.TemporalAdjusters
 
 class Bank {
     val accounts = HashMap<String, Float>()
-    val weeklyRules = ArrayList<String>()
-    val biweeklyRules = ArrayList<String>()
-    val monthlyRules = ArrayList<String>()
+    var rules = ""
     var lastSync = getLastSunday()
 
 
@@ -44,30 +42,34 @@ class Bank {
         save()
     }
 
-    fun addRule(period: String, rule: String) {
-        when (period) {
-            "weekly" -> weeklyRules.add(rule)
-            "biweekly" -> biweeklyRules.add(rule)
-            "monthly" -> monthlyRules.add(rule)
-        }
-    }
-
     fun sync() {
         var monthsSinceLastSync = ChronoUnit.MONTHS.between(lastSync, LocalDate.now())
-        while (monthsSinceLastSync > 0) {
-            monthlyRules.forEach { rule -> runRule(rule) }
-            monthsSinceLastSync--
-        }
-
         var biweeksSinceLastSync = ChronoUnit.WEEKS.between(lastSync, LocalDate.now()) / 2
-        while (biweeksSinceLastSync > 0) {
-            biweeklyRules.forEach { rule -> runRule(rule) }
-            biweeksSinceLastSync--
-        }
-
         var weeksSinceLastSync = ChronoUnit.WEEKS.between(lastSync, LocalDate.now())
-        while (weeksSinceLastSync > 0) {
-            weeklyRules.forEach { rule -> runRule(rule) }
+        val lines = rules.split("\n")
+
+        while (
+            monthsSinceLastSync > 0L ||
+            biweeksSinceLastSync > 0L ||
+            weeksSinceLastSync > 0L
+        ) {
+            lines.forEach { line ->
+                val words = line.split(" ")
+                if (words.isEmpty()) return
+
+                if (when (line.split(" ").get(0)) {
+                        "weekly" -> weeksSinceLastSync > 0L
+                        "biweekly" -> biweeksSinceLastSync > 0L
+                        "monthly" -> monthsSinceLastSync > 0L
+                        else -> false
+                    }
+                ) {
+                    runRule(words)
+                }
+            }
+
+            monthsSinceLastSync--
+            biweeksSinceLastSync--
             weeksSinceLastSync--
         }
 
@@ -83,17 +85,7 @@ class Bank {
     private fun toJson(): JSONObject {
         val j = JSONObject()
 
-        val jWeeklyRules = JSONArray()
-        weeklyRules.forEach { rule -> jWeeklyRules.put(rule) }
-        j.put("weeklyRules", jWeeklyRules)
-
-        val jBiweeklyRules = JSONArray()
-        biweeklyRules.forEach { rule -> jBiweeklyRules.put(rule) }
-        j.put("biweeklyRules", jBiweeklyRules)
-
-        val jmonthlyRules = JSONArray()
-        monthlyRules.forEach { rule -> jmonthlyRules.put(rule) }
-        j.put("monthlyRules", jmonthlyRules)
+        j.put("rules", rules)
 
         val jAccounts = JSONObject()
         accounts.forEach { (name, account) -> jAccounts.put(name, account) }
@@ -102,17 +94,16 @@ class Bank {
         return j
     }
 
-    private fun runRule(rule: String) {
-        val words: List<String> = rule.split(" ")
-        if (words.size < 3) return
+    private fun runRule(words: List<String>) {
+        if (words.size < 4) return
 
-        var shift = 0
+        var shift = 1
 
-        if (words.get(0) == "if") {
-            if (words.size < 8) return
-            val conditionAccount1 = words.getOrNull(1) ?: return
-            val condition = words.getOrNull(2) ?: return
-            val conditionValue = words.getOrNull(3)?.toFloat() ?: return
+        if (words.get(shift) == "if") {
+            if (words.size < 9) return
+            val conditionAccount1 = words.getOrNull(1 + shift) ?: return
+            val condition = words.getOrNull(2 + shift) ?: return
+            val conditionValue = words.getOrNull(3 + shift)?.toFloat() ?: return
 
             val conditionAccount1Value = accounts.getOrDefault(conditionAccount1, 0.0f)
 
@@ -127,14 +118,13 @@ class Bank {
                 return
             }
 
-            shift = 5
+            shift = 6
         }
 
         val fromAccount = words.getOrNull(shift) ?: return
         val toAccount = words.getOrNull(shift + 2) ?: return
 
-        val vString = words.getOrNull(shift + 1)
-        vString ?: return
+        val vString = words.getOrNull(shift + 1) ?: return
 
         var v = 0.0f
         if (vString.endsWith("%")) {
@@ -151,9 +141,8 @@ class Bank {
         accounts.merge(toAccount, v, Float::plus)
     }
 
-    private fun save() {
-        //val j = toJson()
-        // Ram leak
+    fun save() {
+        val j = toJson()
     }
 
     fun test(): String {
@@ -163,11 +152,13 @@ class Bank {
         deposit("Food", 0.0f)
         deposit("Saving", 0.0f)
 
-        addRule("biweekly", "Checking 50% Biweekly_Food1")
-        addRule("biweekly", "Checking 100% Biweekly_Food2")
-        addRule("weekly", "if Biweekly_Food1 = 0 then Biweekly_Food2 100% Food")
-        addRule("weekly", "Biweekly_Food1 100% Food")
-        addRule("weekly", "if Food > 25 then Food 25x Saving")
+        rules = """
+        biweekly Checking 50% Biweekly_Food1
+        biweekly Checking 100% Biweekly_Food2
+        weekly if Biweekly_Food1 = 0 then Biweekly_Food2 100% Food
+        weekly Biweekly_Food1 100% Food
+        weekly if Food > 25 then Food 25x Saving
+        """.trimIndent()
 
         lastSync = getLastSunday().minusWeeks(2)
         sync()

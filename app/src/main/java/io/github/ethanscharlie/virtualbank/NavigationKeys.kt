@@ -8,3 +8,6 @@ data object Main : NavKey
 
 @Serializable
 data object DepositWithdrawl : NavKey
+
+@Serializable
+data object Rules : NavKey

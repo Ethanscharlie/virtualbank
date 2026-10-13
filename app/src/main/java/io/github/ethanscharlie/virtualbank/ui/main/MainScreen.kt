@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Divider
 import androidx.compose.material3.FloatingActionButton
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
@@ -29,6 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
 import io.github.ethanscharlie.virtualbank.Bank
 import io.github.ethanscharlie.virtualbank.DepositWithdrawl
+import io.github.ethanscharlie.virtualbank.Rules
 import io.github.ethanscharlie.virtualbank.data.DefaultDataRepository
 import io.github.ethanscharlie.virtualbank.theme.VirtualBankTheme
 
@@ -65,6 +68,14 @@ fun MainScreen(onItemClick: (NavKey) -> Unit, bank: Bank, modifier: Modifier = M
                 }
 
                 HorizontalDivider()
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            Button(
+                onClick = { onItemClick(Rules) }
+            ) {
+                Text("Rules")
             }
         }
     }

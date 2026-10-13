@@ -10,6 +10,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import io.github.ethanscharlie.virtualbank.ui.main.DepositWithdrawlScreen
 import io.github.ethanscharlie.virtualbank.ui.main.MainScreen
+import io.github.ethanscharlie.virtualbank.ui.main.RulesScreen
 
 @Composable
 fun MainNavigation() {
@@ -32,6 +33,14 @@ fun MainNavigation() {
 
                 entry<DepositWithdrawl> {
                     DepositWithdrawlScreen(
+                        onBackClick = { backStack.removeLast() },
+                        bank = bank,
+                        modifier = Modifier.safeDrawingPadding().padding(16.dp)
+                    )
+                }
+
+                entry<Rules> {
+                    RulesScreen(
                         onBackClick = { backStack.removeLast() },
                         bank = bank,
                         modifier = Modifier.safeDrawingPadding().padding(16.dp)
