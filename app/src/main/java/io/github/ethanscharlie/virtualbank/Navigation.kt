@@ -8,20 +8,35 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import io.github.ethanscharlie.virtualbank.ui.main.DepositWithdrawlScreen
 import io.github.ethanscharlie.virtualbank.ui.main.MainScreen
 
 @Composable
 fun MainNavigation() {
-  val backStack = rememberNavBackStack(Main)
+    val backStack = rememberNavBackStack(Main)
+    val bank = Bank()
+    bank.test()
 
-  NavDisplay(
-    backStack = backStack,
-    onBack = { backStack.removeLastOrNull() },
-    entryProvider =
-      entryProvider {
-        entry<Main> {
-          MainScreen(onItemClick = { navKey -> backStack.add(navKey) }, modifier = Modifier.safeDrawingPadding().padding(16.dp))
-        }
-      },
-  )
+    NavDisplay(
+        backStack = backStack,
+        onBack = { backStack.removeLastOrNull() },
+        entryProvider =
+            entryProvider {
+                entry<Main> {
+                    MainScreen(
+                        onItemClick = { navKey -> backStack.add(navKey) },
+                        bank = bank,
+                        modifier = Modifier.safeDrawingPadding().padding(16.dp)
+                    )
+                }
+
+                entry<DepositWithdrawl> {
+                    DepositWithdrawlScreen(
+                        onBackClick = { backStack.removeLast() },
+                        bank = bank,
+                        modifier = Modifier.safeDrawingPadding().padding(16.dp)
+                    )
+                }
+            },
+    )
 }

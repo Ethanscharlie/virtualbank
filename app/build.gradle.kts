@@ -48,6 +48,8 @@ dependencies {
   implementation(composeBom)
   androidTestImplementation(composeBom)
 
+ implementation("androidx.compose.material:material-icons-extended:1.7.7")
+
   // Core Android dependencies
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.lifecycle.runtime.ktx)

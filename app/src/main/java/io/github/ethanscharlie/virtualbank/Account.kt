@@ -152,7 +152,8 @@ class Bank {
     }
 
     private fun save() {
-        val j = toJson()
+        //val j = toJson()
+        // Ram leak
     }
 
     fun test(): String {
@@ -164,8 +165,8 @@ class Bank {
 
         addRule("biweekly", "Checking 50% Biweekly_Food1")
         addRule("biweekly", "Checking 100% Biweekly_Food2")
-        addRule("weekly", "Biweekly_Food1 100% Food")
         addRule("weekly", "if Biweekly_Food1 = 0 then Biweekly_Food2 100% Food")
+        addRule("weekly", "Biweekly_Food1 100% Food")
         addRule("weekly", "if Food > 25 then Food 25x Saving")
 
         lastSync = getLastSunday().minusWeeks(2)
