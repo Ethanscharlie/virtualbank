@@ -83,7 +83,6 @@ fun AccountsScreen(
                 onValueChange = { newAccountName = it },
                 label = { Text("New Account") },
                 maxLines = 1,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier
                     .padding(vertical = 16.dp)
                     .width(1000.dp)
