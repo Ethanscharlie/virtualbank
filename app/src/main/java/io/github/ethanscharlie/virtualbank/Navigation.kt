@@ -4,18 +4,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import io.github.ethanscharlie.virtualbank.ui.main.DepositWithdrawlScreen
-import io.github.ethanscharlie.virtualbank.ui.main.MainScreen
-import io.github.ethanscharlie.virtualbank.ui.main.RulesScreen
+import io.github.ethanscharlie.virtualbank.ui.main.*
 
 @Composable
 fun MainNavigation() {
     val backStack = rememberNavBackStack(Main)
-    val bank = Bank()
+    val bank = Bank(LocalContext.current)
     bank.test()
 
     NavDisplay(
@@ -33,7 +32,7 @@ fun MainNavigation() {
 
                 entry<DepositWithdrawl> {
                     DepositWithdrawlScreen(
-                        onBackClick = { backStack.removeLast() },
+                        onBackClick = { backStack.removeLastOrNull() },
                         bank = bank,
                         modifier = Modifier.safeDrawingPadding().padding(16.dp)
                     )
@@ -41,7 +40,15 @@ fun MainNavigation() {
 
                 entry<Rules> {
                     RulesScreen(
-                        onBackClick = { backStack.removeLast() },
+                        onBackClick = { backStack.removeLastOrNull() },
+                        bank = bank,
+                        modifier = Modifier.safeDrawingPadding().padding(16.dp)
+                    )
+                }
+
+                entry<Accounts> {
+                    AccountsScreen(
+                        onBackClick = { backStack.removeLastOrNull() },
                         bank = bank,
                         modifier = Modifier.safeDrawingPadding().padding(16.dp)
                     )

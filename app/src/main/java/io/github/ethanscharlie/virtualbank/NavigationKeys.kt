@@ -11,3 +11,6 @@ data object DepositWithdrawl : NavKey
 
 @Serializable
 data object Rules : NavKey
+
+@Serializable
+data object Accounts : NavKey

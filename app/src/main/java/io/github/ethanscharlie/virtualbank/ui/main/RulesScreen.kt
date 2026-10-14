@@ -1,5 +1,6 @@
 package io.github.ethanscharlie.virtualbank.ui.main
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
@@ -103,10 +104,16 @@ fun RulesScreen(
                     .horizontalScroll(rememberScrollState())
                     .verticalScroll(rememberScrollState()),
                 textStyle = MaterialTheme.typography.bodyLarge.copy(
-                    fontFamily = FontFamily.Monospace
+                    fontFamily = FontFamily.Monospace,
+                    color = MaterialTheme.colorScheme.onSurface
                 ),
                 decorationBox = { innerTextField ->
-                    Box(Modifier.padding(8.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surface)
+                            .padding(8.dp)
+                    ) {
                         innerTextField()
                     }
                 }

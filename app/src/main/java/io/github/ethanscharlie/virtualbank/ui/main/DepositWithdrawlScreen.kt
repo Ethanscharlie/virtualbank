@@ -64,10 +64,10 @@ fun DepositWithdrawlScreen(
     bank: Bank,
     modifier: Modifier = Modifier,
 ) {
-    var currentAccountMut = mutableStateOf("Select")
+    var currentAccountMut = mutableStateOf("")
     var currentAccount by remember { currentAccountMut }
 
-    var otherAccountMut = mutableStateOf("Select")
+    var otherAccountMut = mutableStateOf("")
     var otherAccount by remember { otherAccountMut }
 
     var dropdownExpanded by remember { mutableStateOf(false) }
@@ -156,6 +156,9 @@ fun DepositWithdrawlScreen(
                         return@Button
                     }
 
+                    if (currentAccount == "") return@Button
+                    if (radioSetting == "Transfer" && otherAccount == "") return@Button
+
                     when (radioSetting) {
                         "Withdrawl" -> bank.withdrawl(currentAccount, v)
                         "Deposit" -> bank.deposit(currentAccount, v)
@@ -165,10 +168,10 @@ fun DepositWithdrawlScreen(
                     onBackClick()
                 },
                 modifier = Modifier
-                    .padding(vertical = 10.dp)
+                    .padding(vertical = 32.dp)
                     .width(1000.dp)
             ) {
-                Text(text = "Enter")
+                Text(text = "Enter") // TODO Crash on enter and can't add after added one
             }
         }
     }
@@ -184,13 +187,16 @@ fun DropdownMenu(selection: MutableState<String>, options: List<String>) {
         onExpandedChange = { dropdownExpanded = it },
     ) {
         OutlinedTextField(
-            modifier = Modifier.menuAnchor(),
-            readOnly = true,
+            modifier = Modifier
+                .menuAnchor()
+                .padding(vertical = 10.dp)
+                .width(1000.dp),
             value = selection.value,
-            onValueChange = {},
-            label = { Text("Select option") },
+            onValueChange = { selection.value = it },
+            label = { Text("Select") },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded) },
             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+            readOnly = true
         )
         DropdownMenu(
             expanded = dropdownExpanded,

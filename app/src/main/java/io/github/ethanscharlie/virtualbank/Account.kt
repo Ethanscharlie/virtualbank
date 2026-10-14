@@ -16,9 +16,11 @@ class Bank(val context: Context) {
     var lastSync = getLastSunday()
 
     init {
-        val file = File(context.filesDir, "rules.json")
+        val file = File(context.filesDir, "data.json") // TODO This is silly
         if (file.exists()) {
-            val j = JSONObject(file.readText())
+            val jString = context.openFileInput("data.json").bufferedReader().use { it.readText() }
+            val j = JSONObject(jString)
+
             rules = j.getString("rules")
             lastSync = LocalDate.parse(j.getString("lastSync"))
 
@@ -32,10 +34,12 @@ class Bank(val context: Context) {
             }
         }
 
+        sync()
     }
 
     fun createAccount(name: String) {
         accounts[name] = 0.0f
+        save()
     }
 
     fun balance(account: String): Float {
@@ -102,20 +106,6 @@ class Bank(val context: Context) {
         return LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
     }
 
-    private fun toJson(): JSONObject {
-        val j = JSONObject()
-
-        j.put("rules", rules)
-
-        val jAccounts = JSONObject()
-        accounts.forEach { (name, account) -> jAccounts.put(name, account) }
-        j.put("accounts", jAccounts)
-
-        j.put("lastSync", lastSync.toString())
-
-        return j
-    }
-
     private fun runRule(words: List<String>) {
         if (words.size < 4) return
 
@@ -164,30 +154,39 @@ class Bank(val context: Context) {
     }
 
     fun save() {
-        val file = File(context.filesDir, "data.json")
-        file.writeText(toJson().toString(4))
+        val j = JSONObject()
+
+        j.put("rules", rules)
+        j.put("lastSync", lastSync.toString())
+
+        val jAccounts = JSONObject()
+        accounts.forEach { (name, account) -> jAccounts.put(name, account) }
+        j.put("accounts", jAccounts)
+
+        context.openFileOutput("data.json", Context.MODE_PRIVATE).use { fos ->
+            fos.write(j.toString().toByteArray())
+        }
     }
 
     fun test(): String {
-        //deposit("Checking", 253.0f)
-        //deposit("Biweekly_Food1", 0.0f)
-        //deposit("Biweekly_Food2", 0.0f)
-        //deposit("Food", 0.0f)
-        //deposit("Saving", 0.0f)
+        ///deposit("Checking", 253.0f)
+        ///deposit("Biweekly_Food1", 0.0f)
+        ///deposit("Biweekly_Food2", 0.0f)
+        ///deposit("Food", 0.0f)
+        ///deposit("Saving", 0.0f)
 
-        //rules = """
-        //biweekly Checking 50% Biweekly_Food1
-        //biweekly Checking 100% Biweekly_Food2
-        //weekly if Biweekly_Food1 = 0 then Biweekly_Food2 100% Food
-        //weekly Biweekly_Food1 100% Food
-        //weekly if Food > 25 then Food 25x Saving
-        //""".trimIndent()
+        ///rules = """
+        ///biweekly Checking 50% Biweekly_Food1
+        ///biweekly Checking 100% Biweekly_Food2
+        ///weekly if Biweekly_Food1 = 0 then Biweekly_Food2 100% Food
+        ///weekly Biweekly_Food1 100% Food
+        ///weekly if Food > 25 then Food 25x Saving
+        ///""".trimIndent()
 
-        //lastSync = getLastSunday().minusWeeks(2)
-        //sync()
+        ///lastSync = getLastSunday().minusWeeks(2)
+        ///sync()
 
-        val j = toJson()
-        return j.toString()
+        return ""
     }
 }
 
