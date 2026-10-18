@@ -66,12 +66,8 @@ fun DepositWithdrawlScreen(
     bank: Bank,
     modifier: Modifier = Modifier,
 ) {
-    var currentAccountMut = mutableStateOf("")
-    var currentAccount by remember { currentAccountMut }
-
-    var otherAccountMut = mutableStateOf("")
-    var otherAccount by remember { otherAccountMut }
-
+    var currentAccount by remember { mutableStateOf("") }
+    var otherAccount by remember { mutableStateOf("") }
     var dropdownExpanded by remember { mutableStateOf(false) }
     var value by remember { mutableStateOf("") }
     var radioSetting by remember { mutableStateOf("Withdrawl") }
@@ -105,7 +101,7 @@ fun DepositWithdrawlScreen(
             Modifier.padding(32.dp).padding(innerPadding).verticalScroll(rememberScrollState())
         ) {
 
-            DropdownMenu(currentAccountMut, accountOptions)
+            DropdownMenu(currentAccount, { currentAccount = it }, accountOptions)
 
             OutlinedTextField(
                 value = value,
@@ -145,7 +141,7 @@ fun DepositWithdrawlScreen(
             }
 
             if (radioSetting == "Transfer") {
-                DropdownMenu(otherAccountMut, accountOptions)
+                DropdownMenu(otherAccount, { otherAccount = it }, accountOptions)
             }
 
             Button(
@@ -181,7 +177,7 @@ fun DepositWithdrawlScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DropdownMenu(selection: MutableState<String>, options: List<String>) {
+fun DropdownMenu(currentSelection: String, onSelectionChange: (String) -> Unit, options: List<String>) {
     var dropdownExpanded by remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(
@@ -193,8 +189,8 @@ fun DropdownMenu(selection: MutableState<String>, options: List<String>) {
                 .menuAnchor()
                 .padding(vertical = 10.dp)
                 .width(1000.dp),
-            value = selection.value,
-            onValueChange = { selection.value = it },
+            value = currentSelection,
+            onValueChange = onSelectionChange,
             label = { Text("Select") },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded) },
             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
@@ -208,7 +204,7 @@ fun DropdownMenu(selection: MutableState<String>, options: List<String>) {
                 DropdownMenuItem(
                     text = { Text(selectionOption) },
                     onClick = {
-                        selection.value = selectionOption
+                        onSelectionChange(selectionOption)
                         dropdownExpanded = false
                     }
                 )
