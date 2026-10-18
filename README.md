@@ -40,6 +40,6 @@ This will move 50% of Checking into Savings
 
 ## Compile Instructions
 ```
-./gradlew assembleDebug
+./gradlew build
 ```
 Use `./buildandrun.sh` to use the android emulator with the android cli in `~/.android-cli/bin/`
