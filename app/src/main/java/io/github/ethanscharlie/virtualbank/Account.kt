@@ -11,9 +11,9 @@ import java.time.temporal.TemporalAdjuster
 import java.time.temporal.TemporalAdjusters
 
 class Bank(val context: Context) {
-    val accounts = HashMap<String, Float>()
-    var rules = ""
-    var lastSync = getLastSunday()
+    private val accounts = HashMap<String, Float>()
+    private var lastSync = getLastSunday()
+    private var rules = ""
 
     init {
         val file = File(context.filesDir, "data.json") // TODO This is silly
@@ -42,6 +42,11 @@ class Bank(val context: Context) {
         save()
     }
 
+    fun removeAccount(name: String) {
+        accounts.remove(name)
+        save()
+    }
+
     fun balance(account: String): Float {
         return accounts.getOrDefault(account, 0.0f)
     }
@@ -56,6 +61,13 @@ class Bank(val context: Context) {
         save()
     }
 
+    fun getRules() = rules
+
+    fun setRules(r: String) {
+        rules = r
+        save()
+    }
+
     fun transfer(fromAccount: String, toAccount: String, v: Float) {
         if (!accounts.containsKey(fromAccount)) return
         if (!accounts.containsKey(toAccount)) return
@@ -64,6 +76,14 @@ class Bank(val context: Context) {
         accounts.merge(toAccount, v, Float::plus)
 
         save()
+    }
+
+    fun allAccountNames(): List<String> {
+        return accounts.keys.toList()
+    }
+
+    fun allAccounts(): Map<String, Float> {
+        return accounts.toMap()
     }
 
     fun sync() {
@@ -153,7 +173,7 @@ class Bank(val context: Context) {
         accounts.merge(toAccount, v, Float::plus)
     }
 
-    fun save() {
+    private fun save() {
         val j = JSONObject()
 
         j.put("rules", rules)
@@ -166,27 +186,6 @@ class Bank(val context: Context) {
         context.openFileOutput("data.json", Context.MODE_PRIVATE).use { fos ->
             fos.write(j.toString().toByteArray())
         }
-    }
-
-    fun test(): String {
-        ///deposit("Checking", 253.0f)
-        ///deposit("Biweekly_Food1", 0.0f)
-        ///deposit("Biweekly_Food2", 0.0f)
-        ///deposit("Food", 0.0f)
-        ///deposit("Saving", 0.0f)
-
-        ///rules = """
-        ///biweekly Checking 50% Biweekly_Food1
-        ///biweekly Checking 100% Biweekly_Food2
-        ///weekly if Biweekly_Food1 = 0 then Biweekly_Food2 100% Food
-        ///weekly Biweekly_Food1 100% Food
-        ///weekly if Food > 25 then Food 25x Saving
-        ///""".trimIndent()
-
-        ///lastSync = getLastSunday().minusWeeks(2)
-        ///sync()
-
-        return ""
     }
 }
 

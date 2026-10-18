@@ -52,7 +52,6 @@ fun AccountsScreen(
     bank: Bank,
     modifier: Modifier = Modifier,
 ) {
-    var rules by remember { mutableStateOf(bank.rules) }
     var openAlertDialog by remember { mutableStateOf(false) }
     var newAccountName by remember { mutableStateOf("") }
 
@@ -104,7 +103,7 @@ fun AccountsScreen(
 
             HorizontalDivider()
 
-            bank.accounts.forEach { (name, account) ->
+            bank.allAccounts().forEach { (name, account) ->
                 Row() {
                     Text(
                         String.format("%s ($ %.2f)", name, account),
@@ -118,8 +117,7 @@ fun AccountsScreen(
                             if (account != 0.0f) {
                                 openAlertDialog = true
                             } else {
-                                bank.accounts.remove(name)
-                                bank.save()
+                                bank.removeAccount(name)
                                 onBackClick()
                             }
                         }

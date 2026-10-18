@@ -72,7 +72,7 @@ fun RulesScreen(
     bank: Bank,
     modifier: Modifier = Modifier,
 ) {
-    var rules by remember { mutableStateOf(bank.rules) }
+    var rules by remember { mutableStateOf(bank.getRules()) }
 
     Scaffold(
         topBar = {
@@ -121,8 +121,7 @@ fun RulesScreen(
 
             Button(
                 onClick = {
-                    bank.rules = rules
-                    bank.save()
+                    bank.setRules(rules)
                     onBackClick()
                 }
             ) {

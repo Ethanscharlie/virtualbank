@@ -15,7 +15,6 @@ import io.github.ethanscharlie.virtualbank.ui.main.*
 fun MainNavigation() {
     val backStack = rememberNavBackStack(Main)
     val bank = Bank(LocalContext.current)
-    bank.test()
 
     NavDisplay(
         backStack = backStack,

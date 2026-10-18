@@ -43,7 +43,7 @@ fun MainScreen(onItemClick: (NavKey) -> Unit, bank: Bank, modifier: Modifier = M
         Column(
             Modifier.padding(32.dp).padding(innerPadding)
         ) {
-            bank.accounts.forEach { (name, account) ->
+            bank.allAccounts().forEach { (name, account) ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically

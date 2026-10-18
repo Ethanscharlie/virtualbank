@@ -76,7 +76,7 @@ fun DepositWithdrawlScreen(
     var value by remember { mutableStateOf("") }
     var radioSetting by remember { mutableStateOf("Withdrawl") }
 
-    val accountOptions: List<String> = bank.accounts.map { (name, account) -> name }
+    val accountOptions: List<String> = bank.allAccountNames()
 
     val icon = if (dropdownExpanded)
         Icons.Filled.KeyboardArrowUp
