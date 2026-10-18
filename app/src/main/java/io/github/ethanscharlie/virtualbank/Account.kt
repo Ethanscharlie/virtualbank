@@ -78,13 +78,11 @@ class Bank(val context: Context) {
         save()
     }
 
-    fun allAccountNames(): List<String> {
-        return accounts.keys.toList()
-    }
+    fun allAccountNames(): List<String> = accounts.keys.toList()
 
-    fun allAccounts(): Map<String, Float> {
-        return accounts.toMap()
-    }
+    fun allAccounts(): Map<String, Float> = accounts.toMap()
+
+    fun total(): Float = accounts.values.sum()
 
     fun sync() {
         var monthsSinceLastSync = ChronoUnit.MONTHS.between(lastSync, LocalDate.now())

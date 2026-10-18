@@ -14,6 +14,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.ui.text.font.*
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -56,6 +57,8 @@ fun MainScreen(onItemClick: (NavKey) -> Unit, bank: Bank, modifier: Modifier = M
                 HorizontalDivider()
             }
 
+            TotalRow(bank)
+
             Spacer(Modifier.height(8.dp))
 
             Button(
@@ -73,3 +76,14 @@ fun MainScreen(onItemClick: (NavKey) -> Unit, bank: Bank, modifier: Modifier = M
     }
 }
 
+@Composable
+fun TotalRow(bank: Bank) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = "Total", fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.weight(1f))
+        Text(text = String.format("$ %.2f", bank.total()), textAlign = TextAlign.End, fontWeight = FontWeight.Bold)
+    }
+}
